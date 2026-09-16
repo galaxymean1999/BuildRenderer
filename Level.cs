@@ -8,6 +8,8 @@ namespace BuildRenderer {
 		List<Sector> sectors = new List<Sector>();
 
 		public void LoadLevel(int id) {
+			sectors.Clear();
+
 			LoadSectors();
 		}
 
