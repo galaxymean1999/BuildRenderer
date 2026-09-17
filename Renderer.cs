@@ -85,15 +85,7 @@ namespace BuildRenderer {
 		}
 
 		public static float NormaliseAngle(float angle) {
-			if (angle > MathF.PI) {
-				return angle - MathF.PI;
-			}
-			else if (angle < -MathF.PI) {
-				return angle + MathF.PI;
-			}
-			else {
-				return angle;
-			}
+			return MathF.Atan2(MathF.Sin(angle), MathF.Cos(angle));
 		}
 
 		private void DrawSector(int id, SpriteBatch sb) {
@@ -124,8 +116,20 @@ namespace BuildRenderer {
 						(height1, height2) = (height2, height1);
 					}
 
-					sb.Draw(blank, new Rectangle(screenX1, screenHeight / 2 - height1 / 2, 1, height1), Color.Gray);
-					sb.Draw(blank, new Rectangle(screenX2, screenHeight / 2 - height2 / 2, 1, height2), Color.Gray);
+					float dHeight = height2 - height1;
+					float heightStep = dHeight / (float)((screenX2 - screenX1) == 0 ? 1 : screenX2 - screenX1);
+					float height = height1;
+
+					for (int x = screenX1; x <= screenX2; x++) {
+						if (x >= 0 && x < screenWidth) {
+							sb.Draw(blank, new Rectangle(x, screenHeight / 2 - (int)height / 2, 1, (int)height), Color.White);
+						}
+
+						height += heightStep;
+					}
+
+					/*sb.Draw(blank, new Rectangle(screenX1, screenHeight / 2 - height1 / 2, 1, height1), Color.White);
+					sb.Draw(blank, new Rectangle(screenX2, screenHeight / 2 - height2 / 2, 1, height2), Color.White);*/
 				}
 				else {
 					//DrawSector(w.portal, sb);
