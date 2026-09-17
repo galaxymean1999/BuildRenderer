@@ -13,5 +13,9 @@ namespace BuildRenderer {
 		public float FOV = MathF.PI / 3;
 
 		public int currentSectorID = 0;
+
+		public void Update() {
+			heading = Renderer.NormaliseAngle(heading);
+		}
 	}
 }

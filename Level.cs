@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework;
 
 namespace BuildRenderer {
 	public class Level {
-		List<Sector> sectors = new List<Sector>();
+		public List<Sector> sectors = new List<Sector>();
 
 		public void LoadLevel(int id) {
 			sectors.Clear();
@@ -39,6 +39,10 @@ namespace BuildRenderer {
 						sectors[sectorID].id = sectorID;
 						sectors[sectorID].floorHeight = floorHeight;
 						sectors[sectorID].ceilingHeight = ceilingHeight;
+					}
+					else if (level[i][0] == '#') {
+						numOfWalls++;
+						continue;
 					}
 					else if (i > sectorStartLine && i <= sectorStartLine + numOfWalls) {
 						Vector2 pos1 = new Vector2(float.Parse(line[0]), float.Parse(line[1]));

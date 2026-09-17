@@ -13,5 +13,9 @@
 		public Level level = new Level();
 
 		public int currentLevel = 0;
+
+		public void Update() {
+			player.Update();
+		}
 	}
 }
