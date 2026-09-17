@@ -4,7 +4,7 @@ using System;
 
 namespace BuildRenderer {
 	public class Renderer {
-		public Renderer(Player player, Level level) {
+		public Renderer(Player player, Level level, GraphicsDevice g) {
 			this.player = player;
 			this.level = level;
 
@@ -19,6 +19,9 @@ namespace BuildRenderer {
 			}
 
 			focalLength = screenWidth / (2 * MathF.Tan(player.FOV / 2));
+
+			blank = new Texture2D(g, 1, 1);
+			blank.SetData(new Color[] { Color.White });
 		}
 
 		public int screenWidth = 800;
@@ -27,6 +30,8 @@ namespace BuildRenderer {
 		private Player player;
 
 		private Level level;
+
+		private Texture2D blank;
 
 		private float[] upperClip;
 		private float[] lowerClip;
@@ -38,7 +43,7 @@ namespace BuildRenderer {
 		const float nearPlane = 0.01f;
 
 		public void Render(SpriteBatch sb) {
-
+			DrawSector(player.currentSectorID, sb);
 		}
 
 		private float FindRelativeAngle(Vector2 wallPointPos) {
@@ -49,19 +54,34 @@ namespace BuildRenderer {
 		}
 
 		private Vector2 FindRelativePos(Vector2 wallPointPos) {
-			Vector2 relPos = new Vector2();
+			/*Vector2 relPos = new Vector2();
 
 			float relativeAngle = FindRelativeAngle(wallPointPos);
 
 			float angleToRelCords = MathF.PI - relativeAngle;
 
-			float distance = MathF.Sqrt(wallPointPos.X - player.position.X + wallPointPos.Y - player.position.Y);
+			float distance = MathF.Sqrt(MathF.Pow(wallPointPos.X - player.position.X, 2) + MathF.Pow(wallPointPos.Y - player.position.Y, 2));
 
 			relPos.Y = MathF.Sin(angleToRelCords) * distance;
 
 			relPos.X = relPos.Y / MathF.Tan(angleToRelCords);
 
-			return relPos;
+			return relPos;*/
+
+			float dx = wallPointPos.X - player.position.X;
+			float dy = wallPointPos.Y - player.position.Y;
+
+			float sin = MathF.Sin(player.heading);
+			float cos = MathF.Cos(player.heading);
+
+			return new Vector2(
+				dy * cos - dx * sin,
+				dy * sin + dx * cos
+				);
+		}
+
+		private float GetDistance(Vector2 pos1, Vector2 pos2) {
+			return MathF.Sqrt(MathF.Pow(pos1.X - pos2.X, 2) + MathF.Pow(pos1.Y - pos2.Y, 2));
 		}
 
 		public static float NormaliseAngle(float angle) {
@@ -90,11 +110,25 @@ namespace BuildRenderer {
 				}
 
 				if (w.portal == -1) {
-					int screenX1 = (int)(screenWidth / 2 + MathF.Tan(relAngle1) * focalLength);
-					int screenX2 = (int)(screenWidth / 2 + MathF.Tan(relAngle1) * focalLength);
+					int screenX1 = (int)(screenWidth / 2 + (relPos1.X / relPos1.Y) * focalLength);
+					int screenX2 = (int)(screenWidth / 2 + (relPos2.X / relPos2.Y) * focalLength);
+
+					int height1 = (int)(screenHeight / relPos1.Y);
+					int height2 = (int)(screenHeight / relPos2.Y);
+
+					if (screenX1 > screenX2) {
+						(screenX1, screenX2) = (screenX2, screenX1);
+
+						(relPos1, relPos2) = (relPos2, relPos1);
+
+						(height1, height2) = (height2, height1);
+					}
+
+					sb.Draw(blank, new Rectangle(screenX1, screenHeight / 2 - height1 / 2, 1, height1), Color.Gray);
+					sb.Draw(blank, new Rectangle(screenX2, screenHeight / 2 - height2 / 2, 1, height2), Color.Gray);
 				}
 				else {
-					
+					//DrawSector(w.portal, sb);
 				}
 			}
 		}

@@ -16,7 +16,7 @@ namespace BuildRenderer {
 		private GameState gs;
 
 		protected override void Initialize() {
-			gs = new GameState();
+			gs = new GameState(GraphicsDevice);
 
 			g.PreferredBackBufferWidth = gs.renderer.screenWidth;
 			g.PreferredBackBufferHeight = gs.renderer.screenHeight;

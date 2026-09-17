@@ -1,7 +1,9 @@
-﻿namespace BuildRenderer {
+﻿using Microsoft.Xna.Framework.Graphics;
+
+namespace BuildRenderer {
 	public class GameState {
-		public GameState() {
-			renderer = new Renderer(player, level);
+		public GameState(GraphicsDevice g) {
+			renderer = new Renderer(player, level, g);
 
 			level.LoadLevel(currentLevel);
 		}
