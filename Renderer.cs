@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Windows.Forms;
 
 namespace BuildRenderer {
 	public class Renderer {
@@ -12,11 +13,7 @@ namespace BuildRenderer {
 			lowerClip = new float[screenWidth];
 			zBuffer = new float[screenWidth];
 
-			for (int i = 0; i < screenWidth; i++) {
-				upperClip[i] = screenHeight;
-				lowerClip[i] = 0;
-				zBuffer[i] = farPlane;
-			}
+			InitClippings();
 
 			focalLength = screenWidth / (2 * MathF.Tan(player.FOV / 2));
 
@@ -43,7 +40,17 @@ namespace BuildRenderer {
 		const float nearPlane = 0.01f;
 
 		public void Render(SpriteBatch sb) {
+			InitClippings();
+
 			DrawSector(player.currentSectorID, sb);
+		}
+
+		private void InitClippings() {
+			for (int i = 0; i < screenWidth; i++) {
+				upperClip[i] = screenHeight;
+				lowerClip[i] = 0;
+				zBuffer[i] = farPlane;
+			}
 		}
 
 		private float FindRelativeAngle(Vector2 wallPointPos) {
@@ -54,20 +61,6 @@ namespace BuildRenderer {
 		}
 
 		private Vector2 FindRelativePos(Vector2 wallPointPos) {
-			/*Vector2 relPos = new Vector2();
-
-			float relativeAngle = FindRelativeAngle(wallPointPos);
-
-			float angleToRelCords = MathF.PI - relativeAngle;
-
-			float distance = MathF.Sqrt(MathF.Pow(wallPointPos.X - player.position.X, 2) + MathF.Pow(wallPointPos.Y - player.position.Y, 2));
-
-			relPos.Y = MathF.Sin(angleToRelCords) * distance;
-
-			relPos.X = relPos.Y / MathF.Tan(angleToRelCords);
-
-			return relPos;*/
-
 			float dx = wallPointPos.X - player.position.X;
 			float dy = wallPointPos.Y - player.position.Y;
 
@@ -78,10 +71,6 @@ namespace BuildRenderer {
 				dy * cos - dx * sin,
 				dy * sin + dx * cos
 				);
-		}
-
-		private float GetDistance(Vector2 pos1, Vector2 pos2) {
-			return MathF.Sqrt(MathF.Pow(pos1.X - pos2.X, 2) + MathF.Pow(pos1.Y - pos2.Y, 2));
 		}
 
 		public static float NormaliseAngle(float angle) {
@@ -101,6 +90,21 @@ namespace BuildRenderer {
 					continue;
 				}
 
+				// CLIPPING
+				if (relPos1.Y < nearPlane) {
+					float t = (nearPlane - relPos1.Y) / (relPos2.Y - relPos1.Y);
+
+					relPos1.X = relPos1.X + t * (relPos2.X - relPos1.X);
+					relPos1.Y = nearPlane;
+				}
+				else if (relPos2.Y < nearPlane) {
+					float t = (nearPlane - relPos2.Y) / (relPos1.Y - relPos2.Y);
+
+					relPos2.X = relPos2.X + t * (relPos2.X - relPos2.X);
+					relPos2.Y = nearPlane;
+				}
+
+				// If the Wall is SOLID
 				if (w.portal == -1) {
 					int screenX1 = (int)(screenWidth / 2 + (relPos1.X / relPos1.Y) * focalLength);
 					int screenX2 = (int)(screenWidth / 2 + (relPos2.X / relPos2.Y) * focalLength);
@@ -108,6 +112,7 @@ namespace BuildRenderer {
 					int height1 = (int)(screenHeight / relPos1.Y);
 					int height2 = (int)(screenHeight / relPos2.Y);
 
+					// Swap if not ordered
 					if (screenX1 > screenX2) {
 						(screenX1, screenX2) = (screenX2, screenX1);
 
@@ -116,20 +121,25 @@ namespace BuildRenderer {
 						(height1, height2) = (height2, height1);
 					}
 
+					// Calculating for height
 					float dHeight = height2 - height1;
 					float heightStep = dHeight / (float)((screenX2 - screenX1) == 0 ? 1 : screenX2 - screenX1);
 					float height = height1;
 
+					// Draw the wall
 					for (int x = screenX1; x <= screenX2; x++) {
 						if (x >= 0 && x < screenWidth) {
+							lowerClip[x] = screenHeight / 2 - (int)height / 2 + height;
+							upperClip[x] = screenHeight / 2 - (int)height / 2;
 							sb.Draw(blank, new Rectangle(x, screenHeight / 2 - (int)height / 2, 1, (int)height), Color.White);
 						}
 
 						height += heightStep;
 					}
 
-					/*sb.Draw(blank, new Rectangle(screenX1, screenHeight / 2 - height1 / 2, 1, height1), Color.White);
-					sb.Draw(blank, new Rectangle(screenX2, screenHeight / 2 - height2 / 2, 1, height2), Color.White);*/
+					// temporary draw wall bounds
+					sb.Draw(blank, new Rectangle(screenX1, screenHeight / 2 - height1 / 2, 1, height1), Color.Red);
+					sb.Draw(blank, new Rectangle(screenX2, screenHeight / 2 - height2 / 2, 1, height2), Color.Red);
 				}
 				else {
 					//DrawSector(w.portal, sb);
