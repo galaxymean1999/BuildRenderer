@@ -4,10 +4,10 @@ using System;
 using System.Windows.Forms;
 
 namespace BuildRenderer {
-	public class Renderer {
-		public Renderer(Player player, Level level, GraphicsDevice g) {
-			this.player = player;
-			this.level = level;
+	public static class Renderer {
+		public static void Init(Player player, Level level, GraphicsDevice g) {
+			Renderer.player = player;
+			Renderer.level = level;
 
 			upperClip = new float[screenWidth];
 			lowerClip = new float[screenWidth];
@@ -21,31 +21,31 @@ namespace BuildRenderer {
 			blank.SetData(new Color[] { Color.White });
 		}
 
-		public int screenWidth = 800;
-		public int screenHeight = 600;
+		public static int screenWidth = 800;
+		public static int screenHeight = 600;
 
-		private Player player;
+		private static Player player;
 
-		private Level level;
+		private static Level level;
 
-		private Texture2D blank;
+		private static Texture2D blank;
 
-		private float[] upperClip;
-		private float[] lowerClip;
-		private float[] zBuffer;
+		private static float[] upperClip;
+		private static float[] lowerClip;
+		private static float[] zBuffer;
 
-		public float focalLength;
+		public static float focalLength;
 
 		const float farPlane = 128.0f;
 		const float nearPlane = 0.01f;
 
-		public void Render(SpriteBatch sb) {
+		public static void Render(SpriteBatch sb) {
 			InitClippings();
 
 			DrawSector(player.currentSectorID, sb);
 		}
 
-		private void InitClippings() {
+		private static void InitClippings() {
 			for (int i = 0; i < screenWidth; i++) {
 				upperClip[i] = screenHeight;
 				lowerClip[i] = 0;
@@ -53,20 +53,21 @@ namespace BuildRenderer {
 			}
 		}
 
-		private float FindRelativeAngle(Vector2 wallPointPos) {
+		private static float FindRelativeAngle(Vector2 wallPointPos) {
 			float dx = wallPointPos.X - player.position.X;
 			float dy = wallPointPos.Y - player.position.Y;
 
 			return NormaliseAngle(MathF.Atan2(dy, dx) - player.heading);
 		}
 
-		private Vector2 FindRelativePos(Vector2 wallPointPos) {
+		private static Vector2 FindRelativePos(Vector2 wallPointPos) {
 			float dx = wallPointPos.X - player.position.X;
 			float dy = wallPointPos.Y - player.position.Y;
 
 			float sin = MathF.Sin(player.heading);
 			float cos = MathF.Cos(player.heading);
 
+			// matrix rotation to rotate the world position to the player heading
 			return new Vector2(
 				dy * cos - dx * sin,
 				dy * sin + dx * cos
@@ -77,7 +78,7 @@ namespace BuildRenderer {
 			return MathF.Atan2(MathF.Sin(angle), MathF.Cos(angle));
 		}
 
-		private void DrawSector(int id, SpriteBatch sb) {
+		private static void DrawSector(int id, SpriteBatch sb) {
 			foreach (Wall w in level.sectors[id].walls) {
 
 				Vector2 relPos1 = FindRelativePos(w.pos1);

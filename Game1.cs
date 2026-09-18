@@ -18,8 +18,8 @@ namespace BuildRenderer {
 		protected override void Initialize() {
 			gs = new GameState(GraphicsDevice);
 
-			g.PreferredBackBufferWidth = gs.renderer.screenWidth;
-			g.PreferredBackBufferHeight = gs.renderer.screenHeight;
+			g.PreferredBackBufferWidth = Renderer.screenWidth;
+			g.PreferredBackBufferHeight = Renderer.screenHeight;
 
 			base.Initialize();
 		}
@@ -42,7 +42,7 @@ namespace BuildRenderer {
 			GraphicsDevice.Clear(Color.Black);
 			sb.Begin();
 
-			gs.renderer.Render(sb);
+			Renderer.Render(sb);
 
 			sb.End();
 			base.Draw(gameTime);
